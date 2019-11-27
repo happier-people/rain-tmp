@@ -8,6 +8,8 @@ import { RootComponent } from './root.component';
 // import { ServicesModule } from './services/services.module';
 // import { SharedModule } from './shared/shared.module';
 import { CommonModule } from '@angular/common';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [RootComponent],
@@ -18,6 +20,7 @@ import { CommonModule } from '@angular/common';
     // FeaturesModule,
     // ServicesModule,
     RootRoutingModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
     // ApiModule,
     // SharedModule,
   ],
