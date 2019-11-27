@@ -1,0 +1,9 @@
+package.json
+package-lock.json
+dist
+.angulardoc.json
+.vscode/*
+**.sass
+frontend/portal-legacy/**
+frontend/portal3/**
+frontend/portal-next/dist/**
