@@ -10,7 +10,7 @@ import { interval, BehaviorSubject } from 'rxjs';
 import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
 
 @Component({
-  selector: 'app-root',
+  selector: 'nox-root',
   templateUrl: './root.component.html',
   styleUrls: ['./root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,25 +28,22 @@ export class RootComponent implements OnInit {
   isBlastoiseVisible = new BehaviorSubject(true);
 
   ngOnInit() {
-    const type = PIXI.utils.isWebGLSupported() ? 'WebGL' : 'canvas';
-    PIXI.utils.sayHello(type);
-
-    // todo: check platform
-    // todo: inject window
-    // todo: resize container on window resize
-    this.app = new PIXI.Application({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-    this.renderContainer.nativeElement.appendChild(this.app.view);
-
-    this.app.renderer.backgroundColor = 0x0c0c0c;
-
-    this.loader = new PIXI.Loader();
-    this.loader
-      .add([this.blastoiseResource])
-      .on('progress', this.handleLoadProgress.bind(this))
-      .load(this.setup.bind(this));
+    // const type = PIXI.utils.isWebGLSupported() ? 'WebGL' : 'canvas';
+    // PIXI.utils.sayHello(type);
+    // // todo: check platform
+    // // todo: inject window
+    // // todo: resize container on window resize
+    // this.app = new PIXI.Application({
+    //   width: window.innerWidth,
+    //   height: window.innerHeight,
+    // });
+    // this.renderContainer.nativeElement.appendChild(this.app.view);
+    // this.app.renderer.backgroundColor = 0x0c0c0c;
+    // this.loader = new PIXI.Loader();
+    // this.loader
+    //   .add([this.blastoiseResource])
+    //   .on('progress', this.handleLoadProgress.bind(this))
+    //   .load(this.setup.bind(this));
   }
 
   handleLoadProgress = (

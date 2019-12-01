@@ -4,4 +4,5 @@ export const environment: EnvVariable = {
   production: false,
   baseURL: 'https://api-dev.takenotetyping.com',
   env: 'dev',
+  logState: false,
 };
