@@ -17,7 +17,12 @@ export interface RainState {
   backgroundColor: number;
 
   isStageSetup: boolean;
+  isMouseDown: boolean;
+
   drops: RainDrop[];
+  maxDropsAmount: number;
+
+  currentDropsSpeed: number;
 }
 
 export const rainInitialState: RainState = {
@@ -37,7 +42,10 @@ export const rainInitialState: RainState = {
   spritesLoadingProgress: 0,
   backgroundColor: 0x000000,
   isStageSetup: false,
+  isMouseDown: false,
   drops: [],
+  maxDropsAmount: 0,
+  currentDropsSpeed: 0,
 };
 
 export interface RainInitDto {
@@ -54,9 +62,14 @@ export class RainDrop {
 }
 
 export const CONST_DROP_WIDTH = 4;
-export const CONST_DROP_COLOR = 0xeeeeee;
+export const CONST_DROP_COLOR = 0x59c1f5;
 export const CONST_DROP_SIDES_RATIO = 4;
 
-export const CONST_DROPS_AMOUNT = 300;
 export const CONST_DROPS_ADDING_CHANCE = 1 / 20;
-export const CONST_DROPS_SPEED = 1.5;
+export const CONST_DROPS_SPEED = 4; // => 4
+export const CONST_SPEED_DELTA = 0.01;
+
+export const CONST_PIXELS_PER_DROP = 6000;
+
+export const CONST_USE_PIXELLATION = true;
+export const CONST_PIXELLATION_SIZE = new PIXI.Point(5, 5);

@@ -26,6 +26,7 @@
     "@angular/service-worker": "~8.2.4",
     "@angular/upgrade": "^8.2.6",
     "@fortawesome/fontawesome-free": "^5.10.2",
+    "@pixi/filter-pixelate": "^3.0.3",
     "class-transformer": "^0.2.3",
     "decimal.js": "^10.2.0",
     "lodash": "^4.17.15",

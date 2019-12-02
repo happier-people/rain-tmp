@@ -61,8 +61,15 @@ export class RainComponent implements OnInit, OnDestroy {
     );
   }
 
+  setIsMouseDown = (isMouseDown: boolean): void => {
+    this.rainService.setState({
+      isMouseDown,
+    });
+  };
+
   renderLoop = (): void => {
     this.rainService.updateDrops();
+    this.rainService.updateSpeed();
   };
 
   ngOnDestroy(): void {

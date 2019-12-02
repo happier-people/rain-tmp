@@ -7,11 +7,15 @@ import {
   CONST_DROP_COLOR,
   CONST_DROP_SIDES_RATIO,
   RainDrop,
-  CONST_DROPS_AMOUNT,
   CONST_DROPS_SPEED,
   CONST_DROPS_ADDING_CHANCE,
+  CONST_PIXELS_PER_DROP,
+  CONST_USE_PIXELLATION,
+  CONST_PIXELLATION_SIZE,
+  CONST_SPEED_DELTA,
 } from './rain.model';
 import { Injectable } from '@angular/core';
+import { PixelateFilter } from '@pixi/filter-pixelate';
 import * as PIXI from 'pixi.js';
 
 @Injectable()
@@ -43,13 +47,11 @@ export class RainService extends StateService<RainState> {
 
   private get randomStartingPoint(): PIXI.Point {
     const { containerWidth, containerHeight } = this.state;
-    const XY_RATIO = containerWidth / containerHeight;
+    const from = -containerHeight / CONST_DROP_SIDES_RATIO;
+    const to = containerWidth;
+    const x = Math.random() * (to - from) + from;
 
-    if (Math.random() * (XY_RATIO + 1) > XY_RATIO) {
-      return new PIXI.Point(Math.round(Math.random() * containerWidth), 0);
-    } else {
-      return new PIXI.Point(0, Math.round(Math.random() * containerHeight));
-    }
+    return new PIXI.Point(x, 0);
   }
 
   private createDrop = (): RainDrop => {
@@ -79,9 +81,18 @@ export class RainService extends StateService<RainState> {
       loader: new PIXI.Loader(),
       containerWidth,
       containerHeight,
+      maxDropsAmount:
+        (containerWidth * containerHeight) / CONST_PIXELS_PER_DROP,
+      currentDropsSpeed: CONST_DROPS_SPEED,
     });
 
     this.state.app.renderer.backgroundColor = this.state.backgroundColor;
+
+    if (CONST_USE_PIXELLATION) {
+      this.state.app.stage.filters = [
+        new PixelateFilter(CONST_PIXELLATION_SIZE),
+      ];
+    }
 
     container.appendChild(this.state.app.view);
 
@@ -112,8 +123,8 @@ export class RainService extends StateService<RainState> {
   };
 
   private setupScenes = (): void => {
-    const { app } = this.state;
-    const drops = Array(Math.round(CONST_DROPS_AMOUNT * 0.1))
+    const { app, maxDropsAmount } = this.state;
+    const drops = Array(Math.round(maxDropsAmount * 0.01))
       .fill(null)
       .map(() => this.createDrop());
 
@@ -128,11 +139,12 @@ export class RainService extends StateService<RainState> {
   };
 
   updateDrops = (): void => {
-    const { app, drops } = this.state;
+    const { app, drops, maxDropsAmount, currentDropsSpeed } = this.state;
 
     if (
-      drops.length < CONST_DROPS_AMOUNT &&
-      Math.random() < CONST_DROPS_ADDING_CHANCE
+      drops.length < maxDropsAmount &&
+      Math.random() < CONST_DROPS_ADDING_CHANCE &&
+      currentDropsSpeed > 0
     ) {
       const newDrop = this.createDrop();
       app.stage.addChild(newDrop.graphics);
@@ -142,8 +154,8 @@ export class RainService extends StateService<RainState> {
     }
 
     for (const drop of drops) {
-      drop.x += CONST_DROPS_SPEED;
-      drop.y += CONST_DROPS_SPEED * CONST_DROP_SIDES_RATIO;
+      drop.x += currentDropsSpeed;
+      drop.y += currentDropsSpeed * CONST_DROP_SIDES_RATIO;
 
       if (this.isDropOutOfView(drop)) {
         const { x, y } = this.randomStartingPoint;
@@ -153,6 +165,19 @@ export class RainService extends StateService<RainState> {
 
       drop.graphics.x = drop.x;
       drop.graphics.y = drop.y;
+    }
+  };
+
+  updateSpeed = (): void => {
+    const { isMouseDown, currentDropsSpeed } = this.state;
+    if (isMouseDown) {
+      this.setState({
+        currentDropsSpeed: Math.max(currentDropsSpeed - CONST_SPEED_DELTA, 0),
+      });
+    } else if (currentDropsSpeed !== CONST_DROPS_SPEED) {
+      this.setState({
+        currentDropsSpeed: CONST_DROPS_SPEED,
+      });
     }
   };
 }
