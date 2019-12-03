@@ -1,6 +1,15 @@
 import * as PIXI from 'pixi.js';
 import { NormalizedScheme } from '@app/services/data-nomalizer/data-nomalizer.model';
 
+export enum LightningStates {
+  VOID = 'void',
+  FADE_OUT_1 = 'fade-out-1',
+  FADE_IN_1 = 'fade-in-1',
+  FADE_OUT_2 = 'fade-out-2',
+  FADE_IN_2 = 'fade-in-2',
+  FADE_OUT_3 = 'fade-out-3',
+}
+
 export interface RainState {
   app: PIXI.Application;
   loader: PIXI.Loader;
@@ -21,6 +30,9 @@ export interface RainState {
 
   drops: RainDrop[];
   maxDropsAmount: number;
+
+  lightningGraphics: PIXI.Graphics;
+  lightningState: LightningStates;
 
   currentDropsSpeed: number;
 }
@@ -44,6 +56,8 @@ export const rainInitialState: RainState = {
   isStageSetup: false,
   isMouseDown: false,
   drops: [],
+  lightningGraphics: null,
+  lightningState: LightningStates.VOID,
   maxDropsAmount: 0,
   currentDropsSpeed: 0,
 };
@@ -73,3 +87,13 @@ export const CONST_PIXELS_PER_DROP = 6000;
 
 export const CONST_USE_PIXELLATION = true;
 export const CONST_PIXELLATION_SIZE = new PIXI.Point(5, 5);
+
+export const CONST_LIGHTNING_SEGMENTS = 50; // => should be scaling
+export const CONST_LIGHTNING_CHANCE = 0.5; // => 0.16
+export const CONST_LIGHTNING_ALPHA_DELTAS = new Map<LightningStates, number>([
+  [LightningStates.FADE_OUT_1, -0.04], // => -0.08
+  [LightningStates.FADE_IN_1, 0.04], // => 0.08
+  [LightningStates.FADE_OUT_2, -0.04], // => -0.08
+  [LightningStates.FADE_IN_2, 0.04], // => 0.08
+  [LightningStates.FADE_OUT_3, -0.015], // => -0.03
+]);

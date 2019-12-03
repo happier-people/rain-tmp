@@ -13,14 +13,20 @@ import {
   CONST_USE_PIXELLATION,
   CONST_PIXELLATION_SIZE,
   CONST_SPEED_DELTA,
+  LightningStates,
+  CONST_LIGHTNING_ALPHA_DELTAS,
+  CONST_LIGHTNING_CHANCE,
+  CONST_LIGHTNING_SEGMENTS,
 } from './rain.model';
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
 import * as PIXI from 'pixi.js';
+import { CHANCE } from '@app/shared/providers/chance.provider';
+import { Colors } from '@app/utils/colors.util';
 
 @Injectable()
 export class RainService extends StateService<RainState> {
-  constructor() {
+  constructor(@Inject(CHANCE) private chance: Chance.Chance) {
     super(rainInitialState);
   }
 
@@ -38,6 +44,76 @@ export class RainService extends StateService<RainState> {
     line.cacheAsBitmap = true; // ???
 
     return line;
+  };
+
+  private static normalizeAlpha = (alpha: number): number => {
+    if (alpha > 1) {
+      return 1;
+    }
+    if (alpha < 0) {
+      return 0;
+    }
+    return alpha;
+  };
+
+  private modifyGraphicsForLightning = (
+    ctx: PIXI.Graphics,
+    startX: number,
+    startY: number,
+    segments: number,
+    boltWidth: number,
+    isBranch: boolean
+  ): PIXI.Graphics => {
+    const { containerWidth, containerHeight } = this.state;
+    let x = startX;
+    let y = startY;
+
+    if (!isBranch) {
+      ctx.clear();
+    }
+
+    for (let i = 0; i < segments; i++) {
+      ctx.lineStyle(boltWidth, 0xffffff);
+      ctx.moveTo(x, y);
+
+      if (isBranch) {
+        x += this.chance.integer({ min: -30, max: 30 });
+      } else {
+        x += this.chance.integer({ min: -50, max: 50 });
+      }
+      if (x <= 10) {
+        x = 10;
+      }
+      if (x >= containerWidth - 10) {
+        x = containerWidth - 10;
+      }
+
+      if (isBranch) {
+        y += this.chance.integer({ min: 10, max: 20 });
+      } else {
+        y += this.chance.integer({
+          min: 20,
+          max: (containerHeight * 1.2) / segments,
+        });
+      }
+      if ((!isBranch && i === segments - 1) || y > containerHeight) {
+        y = containerHeight;
+      }
+
+      ctx.lineTo(x, y);
+
+      if (y >= containerHeight) {
+        break;
+      }
+
+      if (!isBranch) {
+        if (this.chance.d100() <= 20) {
+          this.modifyGraphicsForLightning(ctx, x, y, 10, 1, true);
+        }
+      }
+    }
+
+    return ctx;
   };
 
   private isDropOutOfView = (drop: RainDrop): boolean => {
@@ -84,6 +160,7 @@ export class RainService extends StateService<RainState> {
       maxDropsAmount:
         (containerWidth * containerHeight) / CONST_PIXELS_PER_DROP,
       currentDropsSpeed: CONST_DROPS_SPEED,
+      lightningGraphics: new PIXI.Graphics(),
     });
 
     this.state.app.renderer.backgroundColor = this.state.backgroundColor;
@@ -123,7 +200,7 @@ export class RainService extends StateService<RainState> {
   };
 
   private setupScenes = (): void => {
-    const { app, maxDropsAmount } = this.state;
+    const { app, maxDropsAmount, lightningGraphics } = this.state;
     const drops = Array(Math.round(maxDropsAmount * 0.01))
       .fill(null)
       .map(() => this.createDrop());
@@ -136,6 +213,8 @@ export class RainService extends StateService<RainState> {
       drops,
       isStageSetup: true,
     });
+
+    app.stage.addChild(lightningGraphics);
   };
 
   updateDrops = (): void => {
@@ -178,6 +257,103 @@ export class RainService extends StateService<RainState> {
       this.setState({
         currentDropsSpeed: CONST_DROPS_SPEED,
       });
+    }
+  };
+
+  updateLightning = (): void => {
+    const {
+      lightningState,
+      lightningGraphics,
+      containerWidth,
+      containerHeight,
+      app,
+    } = this.state;
+
+    if (lightningState === LightningStates.VOID) {
+      const outcome = this.chance.floating({ min: 0, max: 100 });
+      if (outcome < CONST_LIGHTNING_CHANCE) {
+        const newLightningGraphics = this.modifyGraphicsForLightning(
+          lightningGraphics,
+          this.chance.integer({
+            min: containerWidth * 0.3,
+            max: containerWidth * 0.7,
+          }),
+          -containerHeight * 0.2,
+          CONST_LIGHTNING_SEGMENTS,
+          3,
+          false
+        );
+        this.setState({
+          lightningGraphics: newLightningGraphics,
+          lightningState: LightningStates.FADE_OUT_1,
+        });
+      }
+
+      if (app.renderer.backgroundColor !== 0x000000) {
+        app.renderer.backgroundColor = 0x000000;
+      }
+
+      return;
+    }
+
+    const nextAlpha = RainService.normalizeAlpha(
+      lightningGraphics.alpha + CONST_LIGHTNING_ALPHA_DELTAS.get(lightningState)
+    );
+    lightningGraphics.alpha = nextAlpha;
+
+    app.renderer.backgroundColor = Colors.colorWithOpacity(
+      '000000',
+      1 - nextAlpha / 4
+    );
+
+    if (
+      lightningState === LightningStates.FADE_OUT_1 &&
+      lightningGraphics.alpha < 0.5
+    ) {
+      this.setState({
+        lightningState: LightningStates.FADE_IN_1,
+      });
+      return;
+    }
+
+    if (
+      lightningState === LightningStates.FADE_IN_1 &&
+      lightningGraphics.alpha === 1
+    ) {
+      this.setState({
+        lightningState: LightningStates.FADE_OUT_2,
+      });
+      return;
+    }
+
+    if (
+      lightningState === LightningStates.FADE_OUT_2 &&
+      lightningGraphics.alpha < 0.5
+    ) {
+      this.setState({
+        lightningState: LightningStates.FADE_IN_2,
+      });
+      return;
+    }
+
+    if (
+      lightningState === LightningStates.FADE_IN_2 &&
+      lightningGraphics.alpha === 1
+    ) {
+      this.setState({
+        lightningState: LightningStates.FADE_OUT_3,
+      });
+      return;
+    }
+
+    if (
+      lightningState === LightningStates.FADE_OUT_3 &&
+      lightningGraphics.alpha === 0
+    ) {
+      this.setState({
+        lightningState: LightningStates.VOID,
+      });
+      return;
     }
   };
 }
