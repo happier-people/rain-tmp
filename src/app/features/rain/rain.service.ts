@@ -93,7 +93,7 @@ export class RainService extends StateService<RainState> {
       } else {
         y += this.chance.integer({
           min: 20,
-          max: (containerHeight * 1.2) / segments,
+          max: Math.max((containerHeight * 1.2) / segments, 30),
         });
       }
       if ((!isBranch && i === segments - 1) || y > containerHeight) {
