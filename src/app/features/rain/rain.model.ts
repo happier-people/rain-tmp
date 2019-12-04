@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { NormalizedScheme } from '@app/services/data-nomalizer/data-nomalizer.model';
+import { Range } from '@app/models/common.models';
 
 export enum LightningStates {
   VOID = 'void',
@@ -78,6 +79,7 @@ export class RainDrop {
 export const CONST_DROP_WIDTH = 4;
 export const CONST_DROP_COLOR = 0x59c1f5;
 export const CONST_DROP_SIDES_RATIO = 4;
+export const CONST_DROP_LENGTH_RANGE: Range = { min: 20, max: 40 };
 
 export const CONST_DROPS_ADDING_CHANCE = 1 / 20;
 export const CONST_DROPS_SPEED = 4; // => 4
@@ -89,7 +91,22 @@ export const CONST_USE_PIXELLATION = true;
 export const CONST_PIXELLATION_SIZE = new PIXI.Point(5, 5);
 
 export const CONST_LIGHTNING_SEGMENTS = 50; // => should be scaling
+export const CONST_LIGHTNING_BRANCH_SEGMENTS = 10;
 export const CONST_LIGHTNING_CHANCE = 0.5; // => 0.16
+export const CONST_LIGHTNING_COLOR = 0xffffff;
+
+export const CONST_LIGHTNING_X_RANGE: Range = { min: -50, max: 50 };
+export const CONST_LIGHTNING_BRANCH_X_RANGE: Range = { min: -30, max: 30 };
+export const CONST_LIGHTNING_Y_RANGE: Range = { min: 20, max: 30 };
+export const CONST_LIGHTNING_BRANCH_Y_RANGE: Range = { min: 10, max: 20 };
+export const CONST_LIGHTNING_BORDER_BUFFER = 10;
+
+export const CONST_LIGHTNING_TOP_OFFSET_COEFF = 0.2;
+export const CONST_LIGHTNING_POSITION_RANGE: Range = { min: 0.3, max: 0.7 };
+
+export const CONST_LIGHTNING_WIDTH = 3;
+export const CONST_LIGHTNING_BRANCH_WIDTH = 1;
+
 export const CONST_LIGHTNING_ALPHA_DELTAS = new Map<LightningStates, number>([
   [LightningStates.FADE_OUT_1, -0.04], // => -0.08
   [LightningStates.FADE_IN_1, 0.04], // => 0.08

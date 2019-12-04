@@ -17,6 +17,18 @@ import {
   CONST_LIGHTNING_ALPHA_DELTAS,
   CONST_LIGHTNING_CHANCE,
   CONST_LIGHTNING_SEGMENTS,
+  CONST_LIGHTNING_COLOR,
+  CONST_LIGHTNING_X_RANGE,
+  CONST_LIGHTNING_BRANCH_X_RANGE,
+  CONST_LIGHTNING_BORDER_BUFFER,
+  CONST_LIGHTNING_BRANCH_SEGMENTS,
+  CONST_DROP_LENGTH_RANGE,
+  CONST_LIGHTNING_BRANCH_Y_RANGE,
+  CONST_LIGHTNING_Y_RANGE,
+  CONST_LIGHTNING_TOP_OFFSET_COEFF,
+  CONST_LIGHTNING_WIDTH,
+  CONST_LIGHTNING_BRANCH_WIDTH,
+  CONST_LIGHTNING_POSITION_RANGE,
 } from './rain.model';
 import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
@@ -73,27 +85,31 @@ export class RainService extends StateService<RainState> {
     }
 
     for (let i = 0; i < segments; i++) {
-      ctx.lineStyle(boltWidth, 0xffffff);
+      ctx.lineStyle(boltWidth, CONST_LIGHTNING_COLOR);
       ctx.moveTo(x, y);
 
       if (isBranch) {
-        x += this.chance.integer({ min: -30, max: 30 });
+        x += this.chance.integer(CONST_LIGHTNING_BRANCH_X_RANGE);
       } else {
-        x += this.chance.integer({ min: -50, max: 50 });
+        x += this.chance.integer(CONST_LIGHTNING_X_RANGE);
       }
-      if (x <= 10) {
-        x = 10;
+      if (x <= CONST_LIGHTNING_BORDER_BUFFER) {
+        x = CONST_LIGHTNING_BORDER_BUFFER;
       }
-      if (x >= containerWidth - 10) {
-        x = containerWidth - 10;
+      if (x >= containerWidth - CONST_LIGHTNING_BORDER_BUFFER) {
+        x = containerWidth - CONST_LIGHTNING_BORDER_BUFFER;
       }
 
       if (isBranch) {
-        y += this.chance.integer({ min: 10, max: 20 });
+        y += this.chance.integer(CONST_LIGHTNING_BRANCH_Y_RANGE);
       } else {
         y += this.chance.integer({
-          min: 20,
-          max: Math.max((containerHeight * 1.2) / segments, 30),
+          min: CONST_LIGHTNING_Y_RANGE.min,
+          max: Math.max(
+            (containerHeight * (1 + CONST_LIGHTNING_TOP_OFFSET_COEFF)) /
+              segments,
+            CONST_LIGHTNING_Y_RANGE.max
+          ),
         });
       }
       if ((!isBranch && i === segments - 1) || y > containerHeight) {
@@ -108,7 +124,14 @@ export class RainService extends StateService<RainState> {
 
       if (!isBranch) {
         if (this.chance.d100() <= 20) {
-          this.modifyGraphicsForLightning(ctx, x, y, 10, 1, true);
+          this.modifyGraphicsForLightning(
+            ctx,
+            x,
+            y,
+            CONST_LIGHTNING_BRANCH_SEGMENTS,
+            CONST_LIGHTNING_BRANCH_WIDTH,
+            true
+          );
         }
       }
     }
@@ -136,7 +159,7 @@ export class RainService extends StateService<RainState> {
 
     drop.x = x;
     drop.y = y;
-    drop.length = 20 + Math.round(Math.random() * 20); // 20 - 40
+    drop.length = this.chance.integer(CONST_DROP_LENGTH_RANGE);
 
     drop.graphics = RainService.getGraphicsForDrop(drop);
 
@@ -275,12 +298,12 @@ export class RainService extends StateService<RainState> {
         const newLightningGraphics = this.modifyGraphicsForLightning(
           lightningGraphics,
           this.chance.integer({
-            min: containerWidth * 0.3,
-            max: containerWidth * 0.7,
+            min: containerWidth * CONST_LIGHTNING_POSITION_RANGE.min,
+            max: containerWidth * CONST_LIGHTNING_POSITION_RANGE.max,
           }),
-          -containerHeight * 0.2,
+          -containerHeight * CONST_LIGHTNING_TOP_OFFSET_COEFF,
           CONST_LIGHTNING_SEGMENTS,
-          3,
+          CONST_LIGHTNING_WIDTH,
           false
         );
         this.setState({
