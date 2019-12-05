@@ -29,6 +29,9 @@ import {
   CONST_LIGHTNING_WIDTH,
   CONST_LIGHTNING_BRANCH_WIDTH,
   CONST_LIGHTNING_POSITION_RANGE,
+  CONST_CHARACTER_ASSETS,
+  CONST_CHARACTER_ASSET_Y,
+  CONST_CHARACTER_ASSET_X,
 } from './rain.model';
 import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
@@ -146,9 +149,9 @@ export class RainService extends StateService<RainState> {
 
   private get randomStartingPoint(): PIXI.Point {
     const { containerWidth, containerHeight } = this.state;
-    const from = -containerHeight / CONST_DROP_SIDES_RATIO;
-    const to = containerWidth;
-    const x = Math.random() * (to - from) + from;
+    const min = -containerHeight / CONST_DROP_SIDES_RATIO;
+    const max = containerWidth;
+    const x = this.chance.integer({ min, max });
 
     return new PIXI.Point(x, 0);
   }
@@ -180,6 +183,9 @@ export class RainService extends StateService<RainState> {
       loader: new PIXI.Loader(),
       containerWidth,
       containerHeight,
+      dropsContainer: new PIXI.Container(),
+      lightningContainer: new PIXI.Container(),
+      characterContainer: new PIXI.Container(),
       maxDropsAmount:
         (containerWidth * containerHeight) / CONST_PIXELS_PER_DROP,
       currentDropsSpeed: CONST_DROPS_SPEED,
@@ -188,16 +194,10 @@ export class RainService extends StateService<RainState> {
 
     this.state.app.renderer.backgroundColor = this.state.backgroundColor;
 
-    if (CONST_USE_PIXELLATION) {
-      this.state.app.stage.filters = [
-        new PixelateFilter(CONST_PIXELLATION_SIZE),
-      ];
-    }
-
     container.appendChild(this.state.app.view);
 
     this.state.loader
-      .add([])
+      .add(CONST_CHARACTER_ASSETS)
       .on('progress', this.handleLoadProgress.bind(this))
       .load(this.setupScenes.bind(this));
   };
@@ -223,25 +223,80 @@ export class RainService extends StateService<RainState> {
   };
 
   private setupScenes = (): void => {
-    const { app, maxDropsAmount, lightningGraphics } = this.state;
+    const {
+      app,
+      maxDropsAmount,
+      lightningGraphics,
+      loader,
+      containerWidth,
+      containerHeight,
+      dropsContainer,
+      lightningContainer,
+      characterContainer,
+    } = this.state;
+
     const drops = Array(Math.round(maxDropsAmount * 0.01))
       .fill(null)
       .map(() => this.createDrop());
 
     for (const drop of drops) {
-      app.stage.addChild(drop.graphics);
+      dropsContainer.addChild(drop.graphics);
     }
+
+    lightningContainer.addChild(lightningGraphics);
+
+    const characterSprites = CONST_CHARACTER_ASSETS.map(
+      asset => new PIXI.Sprite(loader.resources[asset].texture)
+    );
+    const xScalingCoeff = containerWidth > 500 ? 3 : 2;
+    const yScalingCoeff = xScalingCoeff;
+
+    for (const sprite of characterSprites) {
+      sprite.visible = false;
+
+      sprite.x = Math.round(
+        containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
+      );
+      sprite.y = Math.round(
+        containerHeight - CONST_CHARACTER_ASSET_Y * yScalingCoeff
+      );
+
+      sprite.scale.x = xScalingCoeff;
+      sprite.scale.y = yScalingCoeff;
+
+      characterContainer.addChild(sprite);
+    }
+
+    const currentCharacterIndex = this.chance.integer({
+      min: 0,
+      max: characterSprites.length - 1,
+    });
+    characterSprites[currentCharacterIndex].visible = true;
+
+    [lightningContainer, characterContainer, dropsContainer].forEach(
+      container => {
+        if (CONST_USE_PIXELLATION) {
+          container.filters = [new PixelateFilter(CONST_PIXELLATION_SIZE)];
+        }
+        app.stage.addChild(container);
+      }
+    );
 
     this.setState({
       drops,
+      characterSprites,
+      currentCharacterIndex,
       isStageSetup: true,
     });
-
-    app.stage.addChild(lightningGraphics);
   };
 
   updateDrops = (): void => {
-    const { app, drops, maxDropsAmount, currentDropsSpeed } = this.state;
+    const {
+      drops,
+      maxDropsAmount,
+      currentDropsSpeed,
+      dropsContainer,
+    } = this.state;
 
     if (
       drops.length < maxDropsAmount &&
@@ -249,7 +304,7 @@ export class RainService extends StateService<RainState> {
       currentDropsSpeed > 0
     ) {
       const newDrop = this.createDrop();
-      app.stage.addChild(newDrop.graphics);
+      dropsContainer.addChild(newDrop.graphics);
 
       drops.push(newDrop);
       this.setState({ drops });

@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import { NormalizedScheme } from '@app/services/data-nomalizer/data-nomalizer.model';
 import { Range } from '@app/models/common.models';
 
 export enum LightningStates {
@@ -18,8 +17,9 @@ export interface RainState {
   containerWidth: number;
   containerHeight: number;
 
-  spritePaths: NormalizedScheme<string>;
-  sprites: NormalizedScheme<PIXI.Sprite>;
+  dropsContainer: PIXI.Container;
+  lightningContainer: PIXI.Container;
+  characterContainer: PIXI.Container;
 
   spriteLoading: string;
   spritesLoadingProgress: number;
@@ -36,6 +36,9 @@ export interface RainState {
   lightningState: LightningStates;
 
   currentDropsSpeed: number;
+
+  currentCharacterIndex: number;
+  characterSprites: PIXI.Sprite[];
 }
 
 export const rainInitialState: RainState = {
@@ -43,14 +46,9 @@ export const rainInitialState: RainState = {
   loader: null,
   containerWidth: 0,
   containerHeight: 0,
-  spritePaths: {
-    all: [],
-    byId: {},
-  },
-  sprites: {
-    all: [],
-    byId: {},
-  },
+  dropsContainer: null,
+  lightningContainer: null,
+  characterContainer: null,
   spriteLoading: null,
   spritesLoadingProgress: 0,
   backgroundColor: 0x000000,
@@ -61,6 +59,8 @@ export const rainInitialState: RainState = {
   lightningState: LightningStates.VOID,
   maxDropsAmount: 0,
   currentDropsSpeed: 0,
+  currentCharacterIndex: 0,
+  characterSprites: [],
 };
 
 export interface RainInitDto {
@@ -114,3 +114,10 @@ export const CONST_LIGHTNING_ALPHA_DELTAS = new Map<LightningStates, number>([
   [LightningStates.FADE_IN_2, 0.04], // => 0.08
   [LightningStates.FADE_OUT_3, -0.015], // => -0.03
 ]);
+
+export const CHARACTER_ASSET_STELLA = '/assets/sprites/sprite-stella.png';
+
+export const CONST_CHARACTER_ASSETS = [CHARACTER_ASSET_STELLA];
+
+export const CONST_CHARACTER_ASSET_X = 256;
+export const CONST_CHARACTER_ASSET_Y = 256;
