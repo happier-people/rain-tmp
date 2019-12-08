@@ -7,12 +7,12 @@ import {
   CONST_DROP_COLOR,
   CONST_DROP_SIDES_RATIO,
   RainDrop,
-  CONST_DROPS_SPEED,
+  CONST_DROPS_SPEED_RANGE,
   CONST_DROPS_ADDING_CHANCE,
   CONST_PIXELS_PER_DROP,
   CONST_USE_PIXELLATION,
   CONST_PIXELLATION_SIZE,
-  CONST_SPEED_DELTA,
+  CONST_DROPS_SPEED_DELTA,
   LightningStates,
   CONST_LIGHTNING_ALPHA_DELTAS,
   CONST_LIGHTNING_CHANCE,
@@ -32,6 +32,15 @@ import {
   CONST_CHARACTER_ASSETS,
   CONST_CHARACTER_ASSET_Y,
   CONST_CHARACTER_ASSET_X,
+  CONST_LIGHTNING_SPEED_RANGE,
+  CONST_LIGHTNING_SPEED_DELTA,
+  CONST_FAR_DROP_WIDTH,
+  CONST_FAR_DROP_COLOR,
+  CONST_FAR_DROP_SIDES_RATIO,
+  CONST_DROPS_STARTING_RATIO,
+  CONST_FAR_DROPS_AMOUNT_RATIO,
+  CONST_FAR_DROPS_SPEED_RANGE,
+  CONST_FAR_DROPS_SPEED_DELTA,
 } from './rain.model';
 import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
@@ -47,11 +56,17 @@ export class RainService extends StateService<RainState> {
 
   private static getGraphicsForDrop = (drop: RainDrop): PIXI.Graphics => {
     const line = new PIXI.Graphics();
-    line.lineStyle(CONST_DROP_WIDTH, CONST_DROP_COLOR);
 
-    const lineA =
-      drop.length / Math.sqrt(Math.pow(CONST_DROP_SIDES_RATIO, 2) + 1);
-    const lineB = lineA * CONST_DROP_SIDES_RATIO;
+    const width = drop.isFar ? CONST_FAR_DROP_WIDTH : CONST_DROP_WIDTH;
+    const color = drop.isFar ? CONST_FAR_DROP_COLOR : CONST_DROP_COLOR;
+    const sidesRatio = drop.isFar
+      ? CONST_FAR_DROP_SIDES_RATIO
+      : CONST_DROP_SIDES_RATIO;
+
+    line.lineStyle(width, color);
+
+    const lineA = drop.length / Math.sqrt(Math.pow(sidesRatio, 2) + 1);
+    const lineB = lineA * sidesRatio;
     line.moveTo(0, 0);
     line.lineTo(lineA, lineB);
     line.x = drop.x;
@@ -156,13 +171,14 @@ export class RainService extends StateService<RainState> {
     return new PIXI.Point(x, 0);
   }
 
-  private createDrop = (): RainDrop => {
+  private createDrop = (isFar: boolean): RainDrop => {
     const drop = new RainDrop();
     const { x, y } = this.randomStartingPoint;
 
     drop.x = x;
     drop.y = y;
     drop.length = this.chance.integer(CONST_DROP_LENGTH_RANGE);
+    drop.isFar = isFar;
 
     drop.graphics = RainService.getGraphicsForDrop(drop);
 
@@ -184,11 +200,14 @@ export class RainService extends StateService<RainState> {
       containerWidth,
       containerHeight,
       dropsContainer: new PIXI.Container(),
+      farDropsContainer: new PIXI.Container(),
       lightningContainer: new PIXI.Container(),
       characterContainer: new PIXI.Container(),
       maxDropsAmount:
         (containerWidth * containerHeight) / CONST_PIXELS_PER_DROP,
-      currentDropsSpeed: CONST_DROPS_SPEED,
+      currentDropsSpeed: CONST_DROPS_SPEED_RANGE.max,
+      currentFarDropsSpeed: CONST_FAR_DROPS_SPEED_RANGE.max,
+      currentLightningSpeed: CONST_LIGHTNING_SPEED_RANGE.max,
       lightningGraphics: new PIXI.Graphics(),
     });
 
@@ -231,16 +250,25 @@ export class RainService extends StateService<RainState> {
       containerWidth,
       containerHeight,
       dropsContainer,
+      farDropsContainer,
       lightningContainer,
       characterContainer,
     } = this.state;
 
-    const drops = Array(Math.round(maxDropsAmount * 0.01))
+    const drops = Array(Math.round(maxDropsAmount * CONST_DROPS_STARTING_RATIO))
       .fill(null)
-      .map(() => this.createDrop());
+      .map(() => this.createDrop(false));
+    const farDrops = Array(
+      Math.round(maxDropsAmount * CONST_DROPS_STARTING_RATIO)
+    )
+      .fill(null)
+      .map(() => this.createDrop(true));
 
     for (const drop of drops) {
       dropsContainer.addChild(drop.graphics);
+    }
+    for (const drop of farDrops) {
+      farDropsContainer.addChild(drop.graphics);
     }
 
     lightningContainer.addChild(lightningGraphics);
@@ -273,17 +301,21 @@ export class RainService extends StateService<RainState> {
     });
     characterSprites[currentCharacterIndex].visible = true;
 
-    [lightningContainer, characterContainer, dropsContainer].forEach(
-      container => {
-        if (CONST_USE_PIXELLATION) {
-          container.filters = [new PixelateFilter(CONST_PIXELLATION_SIZE)];
-        }
-        app.stage.addChild(container);
+    [
+      lightningContainer,
+      farDropsContainer,
+      characterContainer,
+      dropsContainer,
+    ].forEach(container => {
+      if (CONST_USE_PIXELLATION) {
+        container.filters = [new PixelateFilter(CONST_PIXELLATION_SIZE)];
       }
-    );
+      app.stage.addChild(container);
+    });
 
     this.setState({
       drops,
+      farDrops,
       characterSprites,
       currentCharacterIndex,
       isStageSetup: true,
@@ -293,26 +325,42 @@ export class RainService extends StateService<RainState> {
   updateDrops = (): void => {
     const {
       drops,
+      farDrops,
       maxDropsAmount,
       currentDropsSpeed,
+      currentFarDropsSpeed,
       dropsContainer,
+      farDropsContainer,
     } = this.state;
 
     if (
-      drops.length < maxDropsAmount &&
+      drops.length < maxDropsAmount * (1 - CONST_FAR_DROPS_AMOUNT_RATIO) &&
       Math.random() < CONST_DROPS_ADDING_CHANCE &&
       currentDropsSpeed > 0
     ) {
-      const newDrop = this.createDrop();
+      const newDrop = this.createDrop(false);
       dropsContainer.addChild(newDrop.graphics);
 
       drops.push(newDrop);
       this.setState({ drops });
     }
 
-    for (const drop of drops) {
-      drop.x += currentDropsSpeed;
-      drop.y += currentDropsSpeed * CONST_DROP_SIDES_RATIO;
+    if (
+      farDrops.length < maxDropsAmount * CONST_FAR_DROPS_AMOUNT_RATIO &&
+      Math.random() < CONST_DROPS_ADDING_CHANCE &&
+      currentFarDropsSpeed > 0
+    ) {
+      const newDrop = this.createDrop(true);
+      farDropsContainer.addChild(newDrop.graphics);
+
+      farDrops.push(newDrop);
+      this.setState({ farDrops });
+    }
+
+    for (const drop of drops.concat(farDrops)) {
+      const speed = drop.isFar ? currentFarDropsSpeed : currentDropsSpeed;
+      drop.x += speed;
+      drop.y += speed * CONST_DROP_SIDES_RATIO;
 
       if (this.isDropOutOfView(drop)) {
         const { x, y } = this.randomStartingPoint;
@@ -326,15 +374,43 @@ export class RainService extends StateService<RainState> {
   };
 
   updateSpeed = (): void => {
-    const { isMouseDown, currentDropsSpeed } = this.state;
+    const {
+      isMouseDown,
+      currentDropsSpeed,
+      currentFarDropsSpeed,
+      currentLightningSpeed,
+    } = this.state;
     if (isMouseDown) {
       this.setState({
-        currentDropsSpeed: Math.max(currentDropsSpeed - CONST_SPEED_DELTA, 0),
+        currentDropsSpeed: Math.max(
+          currentDropsSpeed - CONST_DROPS_SPEED_DELTA,
+          CONST_DROPS_SPEED_RANGE.min
+        ),
+        currentFarDropsSpeed: Math.max(
+          currentFarDropsSpeed - CONST_FAR_DROPS_SPEED_DELTA,
+          CONST_FAR_DROPS_SPEED_RANGE.min
+        ),
+        currentLightningSpeed: Math.max(
+          currentLightningSpeed - CONST_LIGHTNING_SPEED_DELTA,
+          CONST_LIGHTNING_SPEED_RANGE.min
+        ),
       });
-    } else if (currentDropsSpeed !== CONST_DROPS_SPEED) {
-      this.setState({
-        currentDropsSpeed: CONST_DROPS_SPEED,
-      });
+    } else {
+      if (currentDropsSpeed !== CONST_DROPS_SPEED_RANGE.max) {
+        this.setState({
+          currentDropsSpeed: CONST_DROPS_SPEED_RANGE.max,
+        });
+      }
+      if (currentFarDropsSpeed !== CONST_FAR_DROPS_SPEED_RANGE.max) {
+        this.setState({
+          currentFarDropsSpeed: CONST_FAR_DROPS_SPEED_RANGE.max,
+        });
+      }
+      if (currentLightningSpeed !== CONST_LIGHTNING_SPEED_RANGE.max) {
+        this.setState({
+          currentLightningSpeed: CONST_LIGHTNING_SPEED_RANGE.max,
+        });
+      }
     }
   };
 
@@ -345,6 +421,7 @@ export class RainService extends StateService<RainState> {
       containerWidth,
       containerHeight,
       app,
+      currentLightningSpeed,
     } = this.state;
 
     if (lightningState === LightningStates.VOID) {
@@ -375,7 +452,8 @@ export class RainService extends StateService<RainState> {
     }
 
     const nextAlpha = RainService.normalizeAlpha(
-      lightningGraphics.alpha + CONST_LIGHTNING_ALPHA_DELTAS.get(lightningState)
+      lightningGraphics.alpha +
+        CONST_LIGHTNING_ALPHA_DELTAS.get(lightningState) * currentLightningSpeed
     );
     lightningGraphics.alpha = nextAlpha;
 

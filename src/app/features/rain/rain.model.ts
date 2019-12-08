@@ -18,6 +18,7 @@ export interface RainState {
   containerHeight: number;
 
   dropsContainer: PIXI.Container;
+  farDropsContainer: PIXI.Container;
   lightningContainer: PIXI.Container;
   characterContainer: PIXI.Container;
 
@@ -30,12 +31,15 @@ export interface RainState {
   isMouseDown: boolean;
 
   drops: RainDrop[];
+  farDrops: RainDrop[];
   maxDropsAmount: number;
 
   lightningGraphics: PIXI.Graphics;
   lightningState: LightningStates;
 
   currentDropsSpeed: number;
+  currentFarDropsSpeed: number;
+  currentLightningSpeed: number;
 
   currentCharacterIndex: number;
   characterSprites: PIXI.Sprite[];
@@ -47,6 +51,7 @@ export const rainInitialState: RainState = {
   containerWidth: 0,
   containerHeight: 0,
   dropsContainer: null,
+  farDropsContainer: null,
   lightningContainer: null,
   characterContainer: null,
   spriteLoading: null,
@@ -55,10 +60,13 @@ export const rainInitialState: RainState = {
   isStageSetup: false,
   isMouseDown: false,
   drops: [],
+  farDrops: [],
   lightningGraphics: null,
   lightningState: LightningStates.VOID,
   maxDropsAmount: 0,
   currentDropsSpeed: 0,
+  currentLightningSpeed: 0,
+  currentFarDropsSpeed: 0,
   currentCharacterIndex: 0,
   characterSprites: [],
 };
@@ -74,6 +82,7 @@ export class RainDrop {
   y: number;
   length: number;
   graphics: PIXI.Graphics;
+  isFar: boolean;
 }
 
 export const CONST_DROP_WIDTH = 4;
@@ -81,11 +90,29 @@ export const CONST_DROP_COLOR = 0x59c1f5;
 export const CONST_DROP_SIDES_RATIO = 4;
 export const CONST_DROP_LENGTH_RANGE: Range = { min: 20, max: 40 };
 
-export const CONST_DROPS_ADDING_CHANCE = 1 / 20;
-export const CONST_DROPS_SPEED = 4; // => 4
-export const CONST_SPEED_DELTA = 0.01;
+export const CONST_FAR_DROP_WIDTH = CONST_DROP_WIDTH * 0.5;
+export const CONST_FAR_DROP_COLOR = CONST_DROP_COLOR;
+export const CONST_FAR_DROP_SIDES_RATIO = CONST_DROP_SIDES_RATIO;
+export const CONST_FAR_DROP_LENGTH_RANGE: Range = {
+  min: CONST_DROP_LENGTH_RANGE.min * 0.5,
+  max: CONST_DROP_LENGTH_RANGE.max * 0.5,
+};
 
-export const CONST_PIXELS_PER_DROP = 6000;
+export const CONST_DROPS_STARTING_RATIO = 0.01;
+export const CONST_DROPS_ADDING_CHANCE = 1 / 20;
+export const CONST_FAR_DROPS_AMOUNT_RATIO = 0.3;
+
+export const CONST_DROPS_SPEED_RANGE: Range = { min: 0, max: 4 };
+export const CONST_DROPS_SPEED_DELTA = 0.01;
+export const CONST_FAR_DROPS_SPEED_RANGE: Range = {
+  min: 0,
+  max: CONST_DROPS_SPEED_RANGE.max * 0.3,
+};
+export const CONST_FAR_DROPS_SPEED_DELTA = CONST_DROPS_SPEED_DELTA * 0.5;
+export const CONST_LIGHTNING_SPEED_RANGE: Range = { min: 0.5, max: 1 };
+export const CONST_LIGHTNING_SPEED_DELTA = 0.01;
+
+export const CONST_PIXELS_PER_DROP = 5000; // => 6000
 
 export const CONST_USE_PIXELLATION = true;
 export const CONST_PIXELLATION_SIZE = new PIXI.Point(5, 5);
