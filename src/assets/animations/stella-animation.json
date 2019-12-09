@@ -1,0 +1,98 @@
+{
+  "frames": {
+    "sprite-stella-anim-001.png": {
+      "frame": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-002.png": {
+      "frame": { "x": 256, "y": 0, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-003.png": {
+      "frame": { "x": 0, "y": 256, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-004.png": {
+      "frame": { "x": 256, "y": 256, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-005.png": {
+      "frame": { "x": 0, "y": 512, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-006.png": {
+      "frame": { "x": 256, "y": 512, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-007.png": {
+      "frame": { "x": 0, "y": 768, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-008.png": {
+      "frame": { "x": 256, "y": 768, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    },
+    "sprite-stella-anim-009.png": {
+      "frame": { "x": 0, "y": 1024, "w": 256, "h": 256 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 256 },
+      "sourceSize": { "w": 256, "h": 256 },
+      "anchor": { "x": 0, "y": 0 }
+    }
+  },
+  "animations": {
+    "sprite-stella-anim": [
+      "sprite-stella-anim-001.png",
+      "sprite-stella-anim-002.png",
+      "sprite-stella-anim-003.png",
+      "sprite-stella-anim-004.png",
+      "sprite-stella-anim-005.png",
+      "sprite-stella-anim-006.png",
+      "sprite-stella-anim-007.png",
+      "sprite-stella-anim-008.png",
+      "sprite-stella-anim-009.png"
+    ]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "sprite-stella-animation.png",
+    "format": "RGBA8888",
+    "size": { "w": 512, "h": 1280 },
+    "scale": "1",
+    "smartupdate": "$TexturePacker:SmartUpdate:4fbd4319377fc71565bcd9a6e402544a:caf4bd8e4dde263dc5560f60e5028238:81e63d730e4af148a4395adb8828ad2b$"
+  }
+}

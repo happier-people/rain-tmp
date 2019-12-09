@@ -41,6 +41,8 @@ import {
   CONST_FAR_DROPS_AMOUNT_RATIO,
   CONST_FAR_DROPS_SPEED_RANGE,
   CONST_FAR_DROPS_SPEED_DELTA,
+  CONST_ANIMATION_ASSETS,
+  ANIMATION_ASSET_STELLA_1,
 } from './rain.model';
 import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
@@ -216,7 +218,7 @@ export class RainService extends StateService<RainState> {
     container.appendChild(this.state.app.view);
 
     this.state.loader
-      .add(CONST_CHARACTER_ASSETS)
+      .add([...CONST_CHARACTER_ASSETS, ...CONST_ANIMATION_ASSETS])
       .on('progress', this.handleLoadProgress.bind(this))
       .load(this.setupScenes.bind(this));
   };
@@ -299,7 +301,23 @@ export class RainService extends StateService<RainState> {
       min: 0,
       max: characterSprites.length - 1,
     });
-    characterSprites[currentCharacterIndex].visible = true;
+    // characterSprites[currentCharacterIndex].visible = true;
+
+    const sheet = loader.resources[ANIMATION_ASSET_STELLA_1].spritesheet;
+    const animSprite = new PIXI.AnimatedSprite(
+      sheet.animations['sprite-stella-anim']
+    );
+    characterContainer.addChild(animSprite);
+    animSprite.x = Math.round(
+      containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
+    );
+    animSprite.y = Math.round(
+      containerHeight - CONST_CHARACTER_ASSET_Y * yScalingCoeff
+    );
+    animSprite.scale.x = xScalingCoeff;
+    animSprite.scale.y = yScalingCoeff;
+    animSprite.animationSpeed = 0.05;
+    animSprite.play();
 
     [
       lightningContainer,

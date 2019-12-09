@@ -148,3 +148,8 @@ export const CONST_CHARACTER_ASSETS = [CHARACTER_ASSET_STELLA];
 
 export const CONST_CHARACTER_ASSET_X = 256;
 export const CONST_CHARACTER_ASSET_Y = 256;
+
+export const ANIMATION_ASSET_STELLA_1 =
+  '/assets/animations/stella-animation.json';
+
+export const CONST_ANIMATION_ASSETS = [ANIMATION_ASSET_STELLA_1];
