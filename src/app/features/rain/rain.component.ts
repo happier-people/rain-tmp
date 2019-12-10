@@ -69,8 +69,10 @@ export class RainComponent implements OnInit, OnDestroy {
 
   renderLoop = (): void => {
     this.rainService.updateDrops();
-    // this.rainService.updateSpeed();
     this.rainService.updateLightning();
+    this.rainService.updateCharacter();
+
+    // this.rainService.updateSpeed();
   };
 
   ngOnDestroy(): void {

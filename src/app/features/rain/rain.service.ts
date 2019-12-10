@@ -29,9 +29,6 @@ import {
   CONST_LIGHTNING_WIDTH,
   CONST_LIGHTNING_BRANCH_WIDTH,
   CONST_LIGHTNING_POSITION_RANGE,
-  CONST_CHARACTER_ASSETS,
-  CONST_CHARACTER_ASSET_Y,
-  CONST_CHARACTER_ASSET_X,
   CONST_LIGHTNING_SPEED_RANGE,
   CONST_LIGHTNING_SPEED_DELTA,
   CONST_FAR_DROP_WIDTH,
@@ -41,14 +38,21 @@ import {
   CONST_FAR_DROPS_AMOUNT_RATIO,
   CONST_FAR_DROPS_SPEED_RANGE,
   CONST_FAR_DROPS_SPEED_DELTA,
-  CONST_ANIMATION_ASSETS,
-  ANIMATION_ASSET_STELLA_1,
 } from './rain.model';
 import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
 import * as PIXI from 'pixi.js';
 import { CHANCE } from '@app/shared/providers/chance.provider';
 import { Colors } from '@app/utils/colors.util';
+import {
+  CHARACTER_ASSETS,
+  FULL_ASSETS_LIST,
+  CONST_CHARACTER_ASSET_X,
+  CONST_CHARACTER_ASSET_Y,
+  CHARACTER_ANIMATIONS,
+  Characters,
+  CONST_ANIMATION_CHANCE,
+} from '@app/models/characters.model';
 
 @Injectable()
 export class RainService extends StateService<RainState> {
@@ -201,16 +205,22 @@ export class RainService extends StateService<RainState> {
       loader: new PIXI.Loader(),
       containerWidth,
       containerHeight,
+
       dropsContainer: new PIXI.Container(),
       farDropsContainer: new PIXI.Container(),
       lightningContainer: new PIXI.Container(),
       characterContainer: new PIXI.Container(),
+
       maxDropsAmount:
         (containerWidth * containerHeight) / CONST_PIXELS_PER_DROP,
       currentDropsSpeed: CONST_DROPS_SPEED_RANGE.max,
       currentFarDropsSpeed: CONST_FAR_DROPS_SPEED_RANGE.max,
+
       currentLightningSpeed: CONST_LIGHTNING_SPEED_RANGE.max,
       lightningGraphics: new PIXI.Graphics(),
+
+      characterAssets: CHARACTER_ASSETS,
+      characterAnimations: CHARACTER_ANIMATIONS,
     });
 
     this.state.app.renderer.backgroundColor = this.state.backgroundColor;
@@ -218,19 +228,27 @@ export class RainService extends StateService<RainState> {
     container.appendChild(this.state.app.view);
 
     this.state.loader
-      .add([...CONST_CHARACTER_ASSETS, ...CONST_ANIMATION_ASSETS])
+      .add(FULL_ASSETS_LIST)
       .on('progress', this.handleLoadProgress.bind(this))
       .load(this.setupScenes.bind(this));
   };
 
   resizeContainer = (width: number, height: number): void => {
-    const { app } = this.state;
+    const { app, characterAssets, characterAnimations } = this.state;
     app.renderer.resize(width, height);
 
     this.setState({
       containerWidth: width,
       containerHeight: height,
     });
+
+    characterAssets.forEach(asset => {
+      this.setupSprite(asset.sprite);
+    });
+
+    for (const animation of characterAnimations) {
+      this.setupSprite(animation.sprite);
+    }
   };
 
   private handleLoadProgress = (
@@ -243,18 +261,34 @@ export class RainService extends StateService<RainState> {
     });
   };
 
+  private setupSprite = (sprite: PIXI.Sprite): void => {
+    const { containerWidth, containerHeight } = this.state;
+    const xScalingCoeff = containerWidth > 500 ? 3 : 2;
+    const yScalingCoeff = xScalingCoeff;
+
+    sprite.x = Math.round(
+      containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
+    );
+    sprite.y = Math.round(
+      containerHeight - CONST_CHARACTER_ASSET_Y * yScalingCoeff
+    );
+
+    sprite.scale.x = xScalingCoeff;
+    sprite.scale.y = yScalingCoeff;
+  };
+
   private setupScenes = (): void => {
     const {
       app,
       maxDropsAmount,
       lightningGraphics,
       loader,
-      containerWidth,
-      containerHeight,
       dropsContainer,
       farDropsContainer,
       lightningContainer,
       characterContainer,
+      characterAssets,
+      characterAnimations,
     } = this.state;
 
     const drops = Array(Math.round(maxDropsAmount * CONST_DROPS_STARTING_RATIO))
@@ -275,49 +309,36 @@ export class RainService extends StateService<RainState> {
 
     lightningContainer.addChild(lightningGraphics);
 
-    const characterSprites = CONST_CHARACTER_ASSETS.map(
-      asset => new PIXI.Sprite(loader.resources[asset].texture)
-    );
-    const xScalingCoeff = containerWidth > 500 ? 3 : 2;
-    const yScalingCoeff = xScalingCoeff;
+    characterAssets.forEach((asset, character) => {
+      const sprite = new PIXI.Sprite(loader.resources[asset.assetPath].texture);
+      this.setupSprite(sprite);
 
-    for (const sprite of characterSprites) {
       sprite.visible = false;
+      characterContainer.addChild(sprite);
 
-      sprite.x = Math.round(
-        containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
-      );
-      sprite.y = Math.round(
-        containerHeight - CONST_CHARACTER_ASSET_Y * yScalingCoeff
-      );
+      characterAssets.set(character, {
+        ...asset,
+        sprite,
+      });
+    });
 
-      sprite.scale.x = xScalingCoeff;
-      sprite.scale.y = yScalingCoeff;
+    const currentCharacter = this.chance.pickone(Object.values(Characters));
+    characterAssets.get(currentCharacter).sprite.visible = true;
+
+    for (const animation of characterAnimations) {
+      const sheet = loader.resources[animation.assetPath].spritesheet;
+      const sprite = new PIXI.AnimatedSprite(
+        sheet.animations[animation.animationName]
+      );
+      this.setupSprite(sprite);
+
+      sprite.animationSpeed = animation.animationSpeed;
+      sprite.loop = false;
+      sprite.onComplete = this.onAnimationComplete.bind(this);
 
       characterContainer.addChild(sprite);
+      animation.sprite = sprite;
     }
-
-    const currentCharacterIndex = this.chance.integer({
-      min: 0,
-      max: characterSprites.length - 1,
-    });
-    // characterSprites[currentCharacterIndex].visible = true;
-
-    const sheet = loader.resources[ANIMATION_ASSET_STELLA_1].spritesheet;
-    const animSprite = new PIXI.AnimatedSprite(
-      sheet.animations['sprite-stella-anim']
-    );
-    characterContainer.addChild(animSprite);
-    animSprite.x = Math.round(
-      containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
-    );
-    animSprite.y = Math.round(
-      containerHeight - CONST_CHARACTER_ASSET_Y * yScalingCoeff
-    );
-    animSprite.scale.x = xScalingCoeff;
-    animSprite.scale.y = yScalingCoeff;
-    animSprite.animationSpeed = 0.05;
-    animSprite.play();
 
     [
       lightningContainer,
@@ -334,8 +355,9 @@ export class RainService extends StateService<RainState> {
     this.setState({
       drops,
       farDrops,
-      characterSprites,
-      currentCharacterIndex,
+      currentCharacter,
+      characterAssets,
+      characterAnimations,
       isStageSetup: true,
     });
   };
@@ -528,6 +550,67 @@ export class RainService extends StateService<RainState> {
         lightningState: LightningStates.VOID,
       });
       return;
+    }
+  };
+
+  private onAnimationComplete = (): void => {
+    const {
+      currentCharacter,
+      characterAssets,
+      characterAnimations,
+      currentAnimationIndex,
+    } = this.state;
+
+    const currentAsset = characterAssets.get(currentCharacter);
+    const currentCharacterAnimations = characterAnimations.filter(
+      ({ character }) => character === currentCharacter
+    );
+
+    const currentAnimation = currentCharacterAnimations[currentAnimationIndex];
+
+    currentAnimation.sprite.visible = false;
+    currentAsset.sprite.visible = true;
+
+    this.setState({
+      isCharacterAnimationInProgress: false,
+    });
+  };
+
+  updateCharacter = (): void => {
+    const {
+      currentCharacter,
+      characterAssets,
+      characterAnimations,
+      isCharacterAnimationInProgress,
+    } = this.state;
+
+    const currentAsset = characterAssets.get(currentCharacter);
+    const currentCharacterAnimations = characterAnimations.filter(
+      ({ character }) => character === currentCharacter
+    );
+
+    const hasAnimations = !!currentCharacterAnimations.length;
+
+    if (hasAnimations && !isCharacterAnimationInProgress) {
+      const outcome = this.chance.floating({ min: 0, max: 100 });
+      if (outcome < CONST_ANIMATION_CHANCE) {
+        const currentAnimationIndex = this.chance.integer({
+          min: 0,
+          max: currentCharacterAnimations.length - 1,
+        });
+        const currentAnimation =
+          currentCharacterAnimations[currentAnimationIndex];
+
+        currentAnimation.sprite.visible = true;
+        currentAsset.sprite.visible = false;
+
+        currentAnimation.sprite.gotoAndPlay(0);
+
+        this.setState({
+          currentAnimationIndex,
+          isCharacterAnimationInProgress: true,
+        });
+      }
     }
   };
 }
