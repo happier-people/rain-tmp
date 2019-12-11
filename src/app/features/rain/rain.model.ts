@@ -126,7 +126,7 @@ export const CONST_LIGHTNING_SPEED_DELTA = 0.01;
 export const CONST_PIXELS_PER_DROP = 5000; // => 6000
 
 export const CONST_USE_PIXELLATION = true;
-export const CONST_PIXELLATION_SIZE = new PIXI.Point(5, 5);
+export const CONST_PIXELLATION_SIZE = new PIXI.Point(4, 4); // => should be scaling
 
 export const CONST_LIGHTNING_SEGMENTS = 50; // => should be scaling
 export const CONST_LIGHTNING_BRANCH_SEGMENTS = 10;

@@ -1,0 +1,41 @@
+{
+  "frames": {
+    "sprite-anna-anim-1.png": {
+      "frame": { "x": 1, "y": 1, "w": 130, "h": 196 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 56, "y": 60, "w": 130, "h": 196 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-anna-anim-2.png": {
+      "frame": { "x": 133, "y": 1, "w": 130, "h": 196 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 56, "y": 60, "w": 130, "h": 196 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-anna-anim-3.png": {
+      "frame": { "x": 1, "y": 1, "w": 130, "h": 196 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 56, "y": 60, "w": 130, "h": 196 },
+      "sourceSize": { "w": 256, "h": 256 }
+    }
+  },
+  "animations": {
+    "sprite-anna-anim": [
+      "sprite-anna-anim-1.png",
+      "sprite-anna-anim-2.png",
+      "sprite-anna-anim-3.png"
+    ]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "animation-sprite-anna.png",
+    "format": "RGBA8888",
+    "size": { "w": 264, "h": 198 },
+    "scale": "1",
+    "smartupdate": "$TexturePacker:SmartUpdate:cd6ad58d1929f96fde25cb9d6a92bc4e:5612aa4679f8a26d70c5da481a6424ab:f5cbd5fee19e19af0316c3ca3f092c0c$"
+  }
+}

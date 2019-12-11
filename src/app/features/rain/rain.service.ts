@@ -20,7 +20,6 @@ import {
   CONST_LIGHTNING_COLOR,
   CONST_LIGHTNING_X_RANGE,
   CONST_LIGHTNING_BRANCH_X_RANGE,
-  CONST_LIGHTNING_BORDER_BUFFER,
   CONST_LIGHTNING_BRANCH_SEGMENTS,
   CONST_DROP_LENGTH_RANGE,
   CONST_LIGHTNING_BRANCH_Y_RANGE,
@@ -100,7 +99,7 @@ export class RainService extends StateService<RainState> {
     boltWidth: number,
     isBranch: boolean
   ): PIXI.Graphics => {
-    const { containerWidth, containerHeight } = this.state;
+    const { containerHeight } = this.state;
     let x = startX;
     let y = startY;
 
@@ -117,12 +116,13 @@ export class RainService extends StateService<RainState> {
       } else {
         x += this.chance.integer(CONST_LIGHTNING_X_RANGE);
       }
-      if (x <= CONST_LIGHTNING_BORDER_BUFFER) {
-        x = CONST_LIGHTNING_BORDER_BUFFER;
-      }
-      if (x >= containerWidth - CONST_LIGHTNING_BORDER_BUFFER) {
-        x = containerWidth - CONST_LIGHTNING_BORDER_BUFFER;
-      }
+      // uncomment this if you want to keep the lightning within the screen
+      // if (x <= CONST_LIGHTNING_BORDER_BUFFER) {
+      //   x = CONST_LIGHTNING_BORDER_BUFFER;
+      // }
+      // if (x >= containerWidth - CONST_LIGHTNING_BORDER_BUFFER) {
+      //   x = containerWidth - CONST_LIGHTNING_BORDER_BUFFER;
+      // }
 
       if (isBranch) {
         y += this.chance.integer(CONST_LIGHTNING_BRANCH_Y_RANGE);
@@ -334,6 +334,7 @@ export class RainService extends StateService<RainState> {
 
       sprite.animationSpeed = animation.animationSpeed;
       sprite.loop = false;
+      sprite.visible = false;
       sprite.onComplete = this.onAnimationComplete.bind(this);
 
       characterContainer.addChild(sprite);

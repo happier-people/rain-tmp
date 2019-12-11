@@ -1,0 +1,41 @@
+{
+  "frames": {
+    "sprite-dana-anim-1.png": {
+      "frame": { "x": 1, "y": 1, "w": 146, "h": 210 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 53, "y": 46, "w": 146, "h": 210 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-dana-anim-2.png": {
+      "frame": { "x": 149, "y": 1, "w": 146, "h": 210 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 53, "y": 46, "w": 146, "h": 210 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-dana-anim-3.png": {
+      "frame": { "x": 1, "y": 1, "w": 146, "h": 210 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 53, "y": 46, "w": 146, "h": 210 },
+      "sourceSize": { "w": 256, "h": 256 }
+    }
+  },
+  "animations": {
+    "sprite-dana-anim": [
+      "sprite-dana-anim-1.png",
+      "sprite-dana-anim-2.png",
+      "sprite-dana-anim-3.png"
+    ]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "animation-sprite-dana.png",
+    "format": "RGBA8888",
+    "size": { "w": 296, "h": 212 },
+    "scale": "1",
+    "smartupdate": "$TexturePacker:SmartUpdate:4cf9eca381e1788c71caf5062f790177:4708f5b240615149995f48edbac2888f:0c80b2555a9516d518facb646bf82ff5$"
+  }
+}

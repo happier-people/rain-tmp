@@ -48,7 +48,7 @@
   "meta": {
     "app": "https://www.codeandweb.com/texturepacker",
     "version": "1.0",
-    "image": "sprite-stella-animation.png",
+    "image": "animation-sprite-stella.png",
     "format": "RGBA8888",
     "size": { "w": 227, "h": 571 },
     "scale": "1",

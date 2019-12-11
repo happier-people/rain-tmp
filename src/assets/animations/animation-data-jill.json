@@ -1,0 +1,41 @@
+{
+  "frames": {
+    "sprite-jill-anim-1.png": {
+      "frame": { "x": 1, "y": 1, "w": 204, "h": 187 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 52, "y": 69, "w": 204, "h": 187 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-jill-anim-2.png": {
+      "frame": { "x": 207, "y": 1, "w": 148, "h": 187 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 52, "y": 69, "w": 148, "h": 187 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-jill-anim-3.png": {
+      "frame": { "x": 1, "y": 1, "w": 204, "h": 187 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 52, "y": 69, "w": 204, "h": 187 },
+      "sourceSize": { "w": 256, "h": 256 }
+    }
+  },
+  "animations": {
+    "sprite-jill-anim": [
+      "sprite-jill-anim-1.png",
+      "sprite-jill-anim-2.png",
+      "sprite-jill-anim-3.png"
+    ]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "animation-sprite-jill.png",
+    "format": "RGBA8888",
+    "size": { "w": 356, "h": 189 },
+    "scale": "1",
+    "smartupdate": "$TexturePacker:SmartUpdate:e58a9ded65d1b0144a8fb38e04fc8a14:1444d31e4cc01cb4761e0190e197a525:b98c638d755ab7e603c99de7a71f6c5e$"
+  }
+}

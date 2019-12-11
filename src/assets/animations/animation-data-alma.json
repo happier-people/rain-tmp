@@ -1,0 +1,41 @@
+{
+  "frames": {
+    "sprite-alma-anim-1.png": {
+      "frame": { "x": 1, "y": 1, "w": 179, "h": 212 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 41, "y": 44, "w": 179, "h": 212 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-alma-anim-2.png": {
+      "frame": { "x": 182, "y": 1, "w": 179, "h": 212 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 41, "y": 44, "w": 179, "h": 212 },
+      "sourceSize": { "w": 256, "h": 256 }
+    },
+    "sprite-alma-anim-3.png": {
+      "frame": { "x": 1, "y": 1, "w": 179, "h": 212 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 41, "y": 44, "w": 179, "h": 212 },
+      "sourceSize": { "w": 256, "h": 256 }
+    }
+  },
+  "animations": {
+    "sprite-alma-anim": [
+      "sprite-alma-anim-1.png",
+      "sprite-alma-anim-2.png",
+      "sprite-alma-anim-3.png"
+    ]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "animation-sprite-alma.png",
+    "format": "RGBA8888",
+    "size": { "w": 362, "h": 214 },
+    "scale": "1",
+    "smartupdate": "$TexturePacker:SmartUpdate:8b23e67b66a41937fef1e69183fa520d:6e7b15a86b399d66073cf252ea174223:40731c29318ca6ed42f0b28bbe3c2200$"
+  }
+}
