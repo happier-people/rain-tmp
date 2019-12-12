@@ -14,13 +14,14 @@ import { debounceTime, take, switchMap, filter } from 'rxjs/operators';
 import { windowProvider, WINDOW } from '@app/shared/providers/window.provider';
 import { interval } from 'rxjs';
 import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
+import { DeviceMotionService } from '@app/services/device-motion/device-motion.service';
 
 @Component({
   selector: 'nox-rain',
   templateUrl: './rain.component.html',
   styleUrls: ['./rain.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [StreamExecutionService, windowProvider],
+  providers: [StreamExecutionService, DeviceMotionService, windowProvider],
 })
 export class RainComponent implements OnInit, OnDestroy {
   @ViewChild('renderContainer', { static: true })
@@ -29,8 +30,9 @@ export class RainComponent implements OnInit, OnDestroy {
   windowResized = new EventEmitter<void>();
 
   constructor(
-    private rainService: RainService,
+    public rainService: RainService,
     private executions: StreamExecutionService,
+    private deviceMotionService: DeviceMotionService,
     @Inject(WINDOW) private window: Window
   ) {}
 
@@ -40,6 +42,8 @@ export class RainComponent implements OnInit, OnDestroy {
       containerWidth: this.window.innerWidth,
       containerHeight: this.window.innerHeight,
     });
+
+    this.deviceMotionService.init(this.window);
 
     this.executions.add(
       this.windowResized.pipe(debounceTime(300)).subscribe(() => {
@@ -59,6 +63,12 @@ export class RainComponent implements OnInit, OnDestroy {
         )
         .subscribe(this.renderLoop.bind(this))
     );
+
+    this.executions.add(
+      this.deviceMotionService.onShake.subscribe(() => {
+        this.rainService.randomCharacter();
+      })
+    );
   }
 
   setIsMouseDown = (isMouseDown: boolean): void => {
@@ -77,5 +87,6 @@ export class RainComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.executions.unsubscribe();
+    this.deviceMotionService.disconnect();
   }
 }

@@ -2,8 +2,13 @@
   class="render-container"
   #renderContainer
   (window:resize)="windowResized.emit()"
-  (mousedown)="setIsMouseDown(true)"
-  (touchstart)="setIsMouseDown(true)"
-  (mouseup)="setIsMouseDown(false)"
-  (touchend)="setIsMouseDown(false)"
+  (panleft)="rainService.nextCharacter()"
+  (panright)="rainService.previousCharacter()"
 ></div>
+
+<!-- uncomment to handle speed by holding -->
+<!-- (should be applied to renderContainer): -->
+<!-- (mousedown)="setIsMouseDown(true)" -->
+<!-- (touchstart)="setIsMouseDown(true)" -->
+<!-- (mouseup)="setIsMouseDown(false)" -->
+<!-- (touchend)="setIsMouseDown(false)" -->

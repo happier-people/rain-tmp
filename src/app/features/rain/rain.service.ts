@@ -11,10 +11,9 @@ import {
   CONST_DROPS_ADDING_CHANCE,
   CONST_PIXELS_PER_DROP,
   CONST_USE_PIXELLATION,
-  CONST_PIXELLATION_SIZE,
   CONST_DROPS_SPEED_DELTA,
   LightningStates,
-  CONST_LIGHTNING_ALPHA_DELTAS,
+  CONST_LIGHTNING_OPACITY_DELTAS,
   CONST_LIGHTNING_CHANCE,
   CONST_LIGHTNING_SEGMENTS,
   CONST_LIGHTNING_COLOR,
@@ -37,6 +36,10 @@ import {
   CONST_FAR_DROPS_AMOUNT_RATIO,
   CONST_FAR_DROPS_SPEED_RANGE,
   CONST_FAR_DROPS_SPEED_DELTA,
+  CONST_COARSE_GRAINED_PIXELLATION,
+  CONST_FINE_GRAINED_PIXELLATION,
+  CONST_TRANSITION_X_DELTA,
+  CONST_TRANSITION_OPACITY_DELTA,
 } from './rain.model';
 import { Injectable, Inject } from '@angular/core';
 import { PixelateFilter } from '@pixi/filter-pixelate';
@@ -263,12 +266,13 @@ export class RainService extends StateService<RainState> {
 
   private setupSprite = (sprite: PIXI.Sprite): void => {
     const { containerWidth, containerHeight } = this.state;
-    const xScalingCoeff = containerWidth > 500 ? 3 : 2;
-    const yScalingCoeff = xScalingCoeff;
+    const xScalingCoeff = 3;
+    const yScalingCoeff = 3;
 
-    sprite.x = Math.round(
-      containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
-    );
+    sprite.x =
+      Math.round(
+        containerWidth / 2 - (CONST_CHARACTER_ASSET_X * xScalingCoeff) / 2
+      ) + 20;
     sprite.y = Math.round(
       containerHeight - CONST_CHARACTER_ASSET_Y * yScalingCoeff
     );
@@ -341,15 +345,27 @@ export class RainService extends StateService<RainState> {
       animation.sprite = sprite;
     }
 
+    if (CONST_USE_PIXELLATION) {
+      lightningContainer.filters = [
+        new PixelateFilter(CONST_COARSE_GRAINED_PIXELLATION),
+      ];
+      farDropsContainer.filters = [
+        new PixelateFilter(CONST_COARSE_GRAINED_PIXELLATION),
+      ];
+      dropsContainer.filters = [
+        new PixelateFilter(CONST_COARSE_GRAINED_PIXELLATION),
+      ];
+      characterContainer.filters = [
+        new PixelateFilter(CONST_FINE_GRAINED_PIXELLATION),
+      ];
+    }
+
     [
       lightningContainer,
       farDropsContainer,
       characterContainer,
       dropsContainer,
     ].forEach(container => {
-      if (CONST_USE_PIXELLATION) {
-        container.filters = [new PixelateFilter(CONST_PIXELLATION_SIZE)];
-      }
       app.stage.addChild(container);
     });
 
@@ -494,7 +510,8 @@ export class RainService extends StateService<RainState> {
 
     const nextAlpha = RainService.normalizeAlpha(
       lightningGraphics.alpha +
-        CONST_LIGHTNING_ALPHA_DELTAS.get(lightningState) * currentLightningSpeed
+        CONST_LIGHTNING_OPACITY_DELTAS.get(lightningState) *
+          currentLightningSpeed
     );
     lightningGraphics.alpha = nextAlpha;
 
@@ -580,38 +597,162 @@ export class RainService extends StateService<RainState> {
   updateCharacter = (): void => {
     const {
       currentCharacter,
+      nextCharacter,
       characterAssets,
       characterAnimations,
       isCharacterAnimationInProgress,
+      isCharacterTransitionInProgress,
+      transitionDirectionMultiplier,
     } = this.state;
 
-    const currentAsset = characterAssets.get(currentCharacter);
-    const currentCharacterAnimations = characterAnimations.filter(
-      ({ character }) => character === currentCharacter
-    );
+    if (!isCharacterTransitionInProgress) {
+      const currentAsset = characterAssets.get(currentCharacter);
+      const currentCharacterAnimations = characterAnimations.filter(
+        ({ character }) => character === currentCharacter
+      );
 
-    const hasAnimations = !!currentCharacterAnimations.length;
+      const hasAnimations = !!currentCharacterAnimations.length;
 
-    if (hasAnimations && !isCharacterAnimationInProgress) {
-      const outcome = this.chance.floating({ min: 0, max: 100 });
-      if (outcome < CONST_ANIMATION_CHANCE) {
-        const currentAnimationIndex = this.chance.integer({
-          min: 0,
-          max: currentCharacterAnimations.length - 1,
-        });
-        const currentAnimation =
-          currentCharacterAnimations[currentAnimationIndex];
+      if (hasAnimations && !isCharacterAnimationInProgress) {
+        const outcome = this.chance.floating({ min: 0, max: 100 });
+        if (outcome < CONST_ANIMATION_CHANCE) {
+          const currentAnimationIndex = this.chance.integer({
+            min: 0,
+            max: currentCharacterAnimations.length - 1,
+          });
+          const currentAnimation =
+            currentCharacterAnimations[currentAnimationIndex];
 
-        currentAnimation.sprite.visible = true;
+          currentAnimation.sprite.visible = true;
+          currentAsset.sprite.visible = false;
+
+          currentAnimation.sprite.gotoAndPlay(0);
+
+          this.setState({
+            currentAnimationIndex,
+            isCharacterAnimationInProgress: true,
+          });
+        }
+      }
+    }
+
+    if (isCharacterTransitionInProgress) {
+      const currentAsset = characterAssets.get(currentCharacter);
+      const nextAsset = characterAssets.get(nextCharacter);
+
+      currentAsset.sprite.x -=
+        CONST_TRANSITION_X_DELTA * transitionDirectionMultiplier;
+      currentAsset.sprite.alpha -= CONST_TRANSITION_OPACITY_DELTA;
+
+      if (!nextAsset.sprite.visible) {
+        nextAsset.sprite.x +=
+          CONST_TRANSITION_X_DELTA *
+          transitionDirectionMultiplier *
+          (1 / CONST_TRANSITION_OPACITY_DELTA);
+        nextAsset.sprite.alpha = 0;
+        nextAsset.sprite.visible = true;
+      }
+
+      nextAsset.sprite.x -=
+        CONST_TRANSITION_X_DELTA * transitionDirectionMultiplier;
+      nextAsset.sprite.alpha += CONST_TRANSITION_OPACITY_DELTA;
+
+      if (currentAsset.sprite.alpha <= 0) {
         currentAsset.sprite.visible = false;
+        currentAsset.sprite.alpha = 1;
 
-        currentAnimation.sprite.gotoAndPlay(0);
+        this.setupSprite(currentAsset.sprite);
+        this.setupSprite(nextAsset.sprite);
 
         this.setState({
-          currentAnimationIndex,
-          isCharacterAnimationInProgress: true,
+          currentCharacter: nextCharacter,
+          nextCharacter: null,
+          isCharacterTransitionInProgress: false,
         });
       }
     }
+  };
+
+  nextCharacter = (): void => {
+    const {
+      isCharacterAnimationInProgress,
+      isCharacterTransitionInProgress,
+      currentCharacter,
+    } = this.state;
+
+    if (isCharacterAnimationInProgress || isCharacterTransitionInProgress) {
+      return;
+    }
+
+    const characters = Object.values(Characters);
+    const currentCharacterIndex = characters.indexOf(currentCharacter);
+
+    const nextCharacterIndex =
+      currentCharacterIndex === characters.length - 1
+        ? 0
+        : currentCharacterIndex + 1;
+    const nextCharacter = characters[nextCharacterIndex];
+
+    this.setState({
+      isCharacterTransitionInProgress: true,
+      nextCharacter,
+      transitionDirectionMultiplier: 1,
+    });
+  };
+
+  previousCharacter = (): void => {
+    const {
+      isCharacterAnimationInProgress,
+      isCharacterTransitionInProgress,
+      currentCharacter,
+    } = this.state;
+
+    if (isCharacterAnimationInProgress || isCharacterTransitionInProgress) {
+      return;
+    }
+
+    const characters = Object.values(Characters);
+    const currentCharacterIndex = characters.indexOf(currentCharacter);
+
+    const nextCharacterIndex =
+      currentCharacterIndex === 0
+        ? characters.length - 1
+        : currentCharacterIndex - 1;
+    const nextCharacter = characters[nextCharacterIndex];
+
+    this.setState({
+      isCharacterTransitionInProgress: true,
+      nextCharacter,
+      transitionDirectionMultiplier: -1,
+    });
+  };
+
+  randomCharacter = (): void => {
+    const {
+      isCharacterAnimationInProgress,
+      isCharacterTransitionInProgress,
+      currentCharacter,
+      characterAssets,
+    } = this.state;
+
+    if (isCharacterAnimationInProgress || isCharacterTransitionInProgress) {
+      return;
+    }
+
+    const characters = Object.values(Characters);
+    const possibleNextCharacters = characters.filter(
+      character => character !== currentCharacter
+    );
+    const nextCharacter = this.chance.pickone(possibleNextCharacters);
+
+    const currentAsset = characterAssets.get(currentCharacter);
+    const nextAsset = characterAssets.get(nextCharacter);
+
+    currentAsset.sprite.visible = false;
+    nextAsset.sprite.visible = true;
+
+    this.setState({
+      currentCharacter: nextCharacter,
+    });
   };
 }

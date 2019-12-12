@@ -51,6 +51,10 @@ export interface RainState {
   characterAnimations: CharacterAnimation[];
   isCharacterAnimationInProgress: boolean;
   currentAnimationIndex: number;
+
+  isCharacterTransitionInProgress: boolean;
+  nextCharacter: Characters;
+  transitionDirectionMultiplier: number;
 }
 
 export const rainInitialState: RainState = {
@@ -80,6 +84,9 @@ export const rainInitialState: RainState = {
   characterAnimations: null,
   isCharacterAnimationInProgress: false,
   currentAnimationIndex: null,
+  isCharacterTransitionInProgress: false,
+  nextCharacter: null,
+  transitionDirectionMultiplier: 0,
 };
 
 export interface RainInitDto {
@@ -126,7 +133,8 @@ export const CONST_LIGHTNING_SPEED_DELTA = 0.01;
 export const CONST_PIXELS_PER_DROP = 5000; // => 6000
 
 export const CONST_USE_PIXELLATION = true;
-export const CONST_PIXELLATION_SIZE = new PIXI.Point(4, 4); // => should be scaling
+export const CONST_COARSE_GRAINED_PIXELLATION = new PIXI.Point(5, 5);
+export const CONST_FINE_GRAINED_PIXELLATION = new PIXI.Point(3, 3);
 
 export const CONST_LIGHTNING_SEGMENTS = 50; // => should be scaling
 export const CONST_LIGHTNING_BRANCH_SEGMENTS = 10;
@@ -145,10 +153,13 @@ export const CONST_LIGHTNING_POSITION_RANGE: Range = { min: 0.3, max: 0.7 };
 export const CONST_LIGHTNING_WIDTH = 3;
 export const CONST_LIGHTNING_BRANCH_WIDTH = 1;
 
-export const CONST_LIGHTNING_ALPHA_DELTAS = new Map<LightningStates, number>([
+export const CONST_LIGHTNING_OPACITY_DELTAS = new Map<LightningStates, number>([
   [LightningStates.FADE_OUT_1, -0.04], // => -0.08
   [LightningStates.FADE_IN_1, 0.04], // => 0.08
   [LightningStates.FADE_OUT_2, -0.04], // => -0.08
   [LightningStates.FADE_IN_2, 0.04], // => 0.08
   [LightningStates.FADE_OUT_3, -0.015], // => -0.03
 ]);
+
+export const CONST_TRANSITION_X_DELTA = 7;
+export const CONST_TRANSITION_OPACITY_DELTA = 0.02;
