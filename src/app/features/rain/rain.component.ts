@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { RainService } from './rain.service';
 import { StreamExecutionService } from '@app/services/stream-execution/stream-execution.service';
-import { debounceTime, take, switchMap, filter } from 'rxjs/operators';
+import { debounceTime, take, switchMap, filter, map } from 'rxjs/operators';
 import { windowProvider, WINDOW } from '@app/shared/providers/window.provider';
 import { interval } from 'rxjs';
 import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
@@ -28,6 +28,12 @@ export class RainComponent implements OnInit, OnDestroy {
   renderContainer: ElementRef;
 
   windowResized = new EventEmitter<void>();
+
+  loadingProgress$ = this.rainService.state$.spritesLoadingProgress.pipe(
+    map(progress =>
+      progress < 10 ? `0${progress.toFixed(2)}` : progress.toFixed(2)
+    )
+  );
 
   constructor(
     public rainService: RainService,

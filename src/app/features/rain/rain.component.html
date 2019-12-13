@@ -6,6 +6,15 @@
   (panright)="rainService.previousCharacter()"
 ></div>
 
+<div
+  class="loader"
+  [class.loader--invisible]="rainService.state$.isStageSetup | async"
+>
+  <span class="loader__text">
+    Loading assets: {{ loadingProgress$ | async }}%
+  </span>
+</div>
+
 <!-- uncomment to handle speed by holding -->
 <!-- (should be applied to renderContainer): -->
 <!-- (mousedown)="setIsMouseDown(true)" -->

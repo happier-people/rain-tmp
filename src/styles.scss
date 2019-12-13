@@ -3,4 +3,19 @@
 html,
 body {
   overflow: hidden;
+  background-color: #000;
+  color: #fff;
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+}
+
+#pre-loader {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
