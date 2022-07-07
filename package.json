@@ -29,7 +29,7 @@
     "class-transformer": "^0.2.3",
     "decimal.js": "^10.2.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "normalizr": "^3.4.1",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",
